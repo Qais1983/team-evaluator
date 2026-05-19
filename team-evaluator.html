@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منظومة تقييم فريق المحتوى</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#1B3A5C;
+  --accent:#C9A84C;
+  --bg:#F4F6F9;
+  --surface:#FFFFFF;
+  --text:#1A1A2E;
+  --text-sec:#5A6A7A;
+  --success:#2D6A4F;
+  --warning:#E76F51;
+  --danger:#C62828;
+  --border:#E2E6EC;
+  --shadow:0 2px 8px rgba(27,58,92,0.06);
+  --shadow-lg:0 8px 24px rgba(27,58,92,0.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'Tajawal','Noto Naskh Arabic',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+.serif{font-family:'Noto Naskh Arabic',serif}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px}
+a{color:var(--primary);text-decoration:none}
+
+/* Navbar */
+.navbar{position:fixed;top:0;right:0;left:0;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow);z-index:100;padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between}
+.navbar-title{font-family:'Noto Naskh Arabic',serif;font-size:20px;font-weight:700;color:var(--primary)}
+.navbar-title::before{content:"";display:inline-block;width:6px;height:24px;background:var(--accent);margin-left:12px;vertical-align:middle;border-radius:2px}
+.nav-links{display:flex;gap:8px;list-style:none}
+.nav-link{padding:10px 16px;color:var(--text-sec);font-weight:500;font-size:15px;border-radius:6px;transition:all .2s;border-bottom:2px solid transparent}
+.nav-link:hover{color:var(--primary);background:var(--bg)}
+.nav-link.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+
+/* Main */
+.main{margin-top:64px;padding:32px;max-width:1280px;margin-left:auto;margin-right:auto}
+.screen{display:none;animation:fadeIn .25s ease-out}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;flex-wrap:wrap;gap:16px}
+.page-title{font-family:'Noto Naskh Arabic',serif;font-size:28px;font-weight:700;color:var(--primary)}
+.page-subtitle{color:var(--text-sec);font-size:14px;margin-top:4px}
+
+/* Cards */
+.card{background:var(--surface);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border);padding:24px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+.stat-card{background:var(--surface);border-radius:10px;padding:20px;border:1px solid var(--border);border-right:4px solid var(--accent);box-shadow:var(--shadow)}
+.stat-label{font-size:13px;color:var(--text-sec);margin-bottom:8px}
+.stat-value{font-size:32px;font-weight:700;color:var(--primary);font-family:'Tajawal',sans-serif}
+.stat-card.danger{border-right-color:var(--danger)}
+.stat-card.danger .stat-value{color:var(--danger)}
+.stat-card.success{border-right-color:var(--success)}
+.stat-card.success .stat-value{color:var(--success)}
+
+/* Member grid */
+.member-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.member-card{background:var(--surface);border-radius:12px;padding:24px;border:1px solid var(--border);box-shadow:var(--shadow);display:flex;gap:20px;align-items:center;transition:all .2s}
+.member-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.member-avatar{width:80px;height:80px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--primary);border:3px solid var(--accent);flex-shrink:0}
+.member-info{flex:1;min-width:0}
+.member-name{font-family:'Noto Naskh Arabic',serif;font-size:18px;font-weight:700;color:var(--primary);margin-bottom:2px}
+.member-role{font-size:13px;color:var(--text-sec);margin-bottom:10px}
+.member-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.zone-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+.late-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;background:#fff8e1;color:#856404;border:1px solid #ffe082}
+.late-badge.critical{background:#ffebee;color:var(--danger);border-color:#ef9a9a}
+.trajectory{font-size:13px;color:var(--text-sec)}
+.trajectory.up{color:var(--success);font-weight:600}
+.trajectory.down{color:var(--danger);font-weight:600}
+.member-score{text-align:center;min-width:90px}
+.member-score-value{font-size:36px;font-weight:700;font-family:'Tajawal',sans-serif;line-height:1}
+.member-score-label{font-size:11px;color:var(--text-sec);margin-top:4px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;transition:all .2s;border:1px solid transparent;cursor:pointer}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#15304d}
+.btn-accent{background:var(--accent);color:#fff}
+.btn-accent:hover{background:#b59440}
+.btn-outline{background:transparent;border-color:var(--border);color:var(--primary)}
+.btn-outline:hover{background:var(--bg);border-color:var(--primary)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#a91d1d}
+.btn-success{background:var(--success);color:#fff}
+.btn-sm{padding:6px 14px;font-size:13px}
+.btn-block{width:100%}
+
+/* FAB */
+.fab{position:fixed;bottom:32px;left:32px;background:var(--accent);color:#fff;padding:14px 24px;border-radius:50px;font-weight:700;box-shadow:var(--shadow-lg);z-index:50;transition:all .2s}
+.fab:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(201,168,76,0.4)}
+
+/* Forms */
+.form-group{margin-bottom:22px}
+.form-label{display:block;font-weight:600;font-size:14px;color:var(--primary);margin-bottom:8px}
+.form-label .required{color:var(--danger);margin-right:4px}
+.form-control{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);transition:all .2s;font-size:15px}
+.form-control:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(201,168,76,0.15)}
+.form-hint{font-size:12px;color:var(--text-sec);margin-top:6px}
+.form-error{font-size:13px;color:var(--danger);margin-top:6px;font-weight:500}
+textarea.form-control{resize:vertical;min-height:90px}
+.char-counter{font-size:12px;color:var(--text-sec);text-align:left;margin-top:4px}
+.char-counter.warn{color:var(--danger);font-weight:600}
+
+.radio-group{display:flex;gap:12px;margin-top:8px}
+.radio-card{flex:1;border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;text-align:center;transition:all .2s;background:var(--surface)}
+.radio-card:hover{border-color:var(--accent)}
+.radio-card.selected{border-color:var(--primary);background:#f0f4f9;font-weight:600}
+.radio-card input{display:none}
+
+.checkbox-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg);border-radius:8px}
+.checkbox-row input{width:18px;height:18px;accent-color:var(--accent)}
+
+/* Criteria scoring */
+.criteria-list{display:flex;flex-direction:column;gap:18px}
+.criterion-row{background:var(--bg);border-radius:10px;padding:18px;border:1px solid var(--border)}
+.criterion-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.criterion-name{font-family:'Noto Naskh Arabic',serif;font-size:16px;font-weight:700;color:var(--primary)}
+.weight-badge{background:var(--accent);color:#fff;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.score-buttons{display:flex;gap:8px;margin-bottom:6px}
+.score-btn{flex:1;height:44px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:20px;font-weight:700;color:var(--text-sec);transition:all .15s;font-family:'Noto Naskh Arabic',serif}
+.score-btn:hover{border-color:var(--accent);color:var(--primary)}
+.score-btn.selected{background:var(--primary);color:#fff;border-color:var(--primary);transform:scale(1.05)}
+.score-label-live{font-size:13px;color:var(--primary);font-weight:600;margin-top:4px;min-height:18px}
+
+/* Reminder */
+.reminder-box{background:#fffbf0;border:2px solid var(--accent);border-radius:10px;padding:16px;margin:20px 0;display:flex;gap:12px;align-items:start}
+.reminder-box::before{content:"!";display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--accent);color:#fff;border-radius:50%;font-weight:700;flex-shrink:0;font-family:serif}
+.reminder-text{font-weight:600;color:var(--primary);font-size:14px}
+
+.info-box{background:#e8f0f7;border-right:4px solid var(--primary);padding:14px;border-radius:6px;font-size:14px;color:var(--primary);margin-top:8px}
+
+.live-preview{background:var(--primary);color:#fff;padding:18px;border-radius:10px;text-align:center;margin:20px 0}
+.live-preview-label{font-size:13px;opacity:.85;margin-bottom:4px}
+.live-preview-value{font-size:36px;font-weight:700;font-family:'Tajawal',sans-serif}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+.data-table th{background:var(--primary);color:#fff;padding:14px;text-align:right;font-weight:600;font-size:14px}
+.data-table td{padding:14px;border-bottom:1px solid var(--border);font-size:14px}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover{background:var(--bg)}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap}
+.tab-btn{padding:12px 20px;color:var(--text-sec);font-weight:600;border-bottom:3px solid transparent;transition:all .2s}
+.tab-btn:hover{color:var(--primary)}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Decision zones */
+.zone-section{margin-bottom:28px;border-radius:10px;overflow:hidden;background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow)}
+.zone-header{padding:16px 20px;color:#fff;font-weight:700;font-family:'Noto Naskh Arabic',serif;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.zone-body{padding:0}
+.zone-row{padding:14px 20px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1.5fr .8fr .8fr .8fr 2fr .8fr;gap:12px;align-items:center;font-size:14px}
+.zone-row:last-child{border-bottom:none}
+.zone-row:hover{background:var(--bg)}
+.zone-empty{padding:20px;text-align:center;color:var(--text-sec);font-style:italic}
+
+/* Criteria reference */
+.criterion-card{background:var(--surface);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow);border:1px solid var(--border);border-top:4px solid var(--accent)}
+.criterion-card h3{font-family:'Noto Naskh Arabic',serif;color:var(--primary);font-size:20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.criterion-section{margin-bottom:14px}
+.criterion-section-label{font-weight:700;color:var(--primary);font-size:14px;margin-bottom:4px;display:block}
+.criterion-section-body{font-size:14px;color:var(--text);line-height:1.8}
+.scale-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+.scale-table th,.scale-table td{padding:8px 12px;border:1px solid var(--border);text-align:right}
+.scale-table th{background:var(--bg);font-weight:700;color:var(--primary);width:80px}
+
+/* Chart */
+.chart-wrap{background:var(--surface);border-radius:10px;padding:20px;margin-bottom:24px;border:1px solid var(--border)}
+#perfChart{width:100%;display:block}
+
+/* Bar viz */
+.bar-track{background:var(--bg);border-radius:6px;height:10px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:6px;transition:width .3s}
+
+/* Profile */
+.profile-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.eval-list{display:flex;flex-direction:column;gap:10px}
+.eval-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;transition:all .2s}
+.eval-item:hover{box-shadow:var(--shadow);border-color:var(--accent)}
+.eval-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.eval-task{font-weight:600;color:var(--primary)}
+.eval-date{font-size:13px;color:var(--text-sec)}
+.eval-score-pill{padding:4px 12px;border-radius:16px;color:#fff;font-weight:700;font-size:13px}
+.eval-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.eval-item.expanded .eval-detail{display:block}
+.eval-evidence{margin-top:8px;font-size:13px;color:var(--text-sec);line-height:1.7}
+.eval-criteria-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.eval-crit{display:flex;justify-content:space-between;padding:6px 10px;background:var(--bg);border-radius:6px;font-size:13px}
+
+.alert-banner{background:#ffebee;border:1px solid var(--danger);border-right:4px solid var(--danger);color:var(--danger);padding:14px 18px;border-radius:8px;margin-bottom:20px;font-weight:600}
+
+.decision-box{padding:20px;border-radius:10px;color:#fff;margin:20px 0;text-align:center}
+.decision-box h3{font-family:'Noto Naskh Arabic',serif;margin-bottom:6px;font-size:22px}
+
+/* Empty */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-sec)}
+.empty-state h3{font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:8px;font-size:20px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border-radius:12px;max-width:720px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg)}
+.modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:'Noto Naskh Arabic',serif;color:var(--primary);font-size:20px;font-weight:700}
+.modal-close{font-size:24px;color:var(--text-sec);width:32px;height:32px;border-radius:50%}
+.modal-close:hover{background:var(--bg)}
+.modal-body{padding:24px;line-height:1.9}
+.modal-body p{margin-bottom:12px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+/* Toast */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:10px}
+.toast{background:var(--surface);border-right:4px solid var(--success);padding:14px 20px;border-radius:8px;box-shadow:var(--shadow-lg);min-width:280px;animation:slideIn .25s ease-out;font-weight:500}
+.toast.error{border-right-color:var(--danger);color:var(--danger)}
+.toast.warning{border-right-color:var(--warning);color:var(--warning)}
+.toast.success{color:var(--success)}
+@keyframes slideIn{from{transform:translateX(-20px);opacity:0}to{transform:none;opacity:1}}
+
+/* Spinner */
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Danger zone */
+.danger-zone{border:1px solid var(--danger);border-radius:10px;padding:20px;margin-top:24px;background:#fff8f8}
+.danger-zone h4{color:var(--danger);font-family:'Noto Naskh Arabic',serif;margin-bottom:8px}
+
+.password-input-wrap{position:relative;display:flex;gap:8px}
+.password-input-wrap input{flex:1}
+
+/* Print */
+.print-header{display:none}
+@media print{
+  .navbar,.fab,.nav-links,.toast-container,.modal-overlay,.action-buttons,.btn,.tabs{display:none !important}
+  body{background:#fff;color:#000}
+  .main{margin-top:0;padding:0}
+  .card,.member-card,.criterion-card,.zone-section{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+  .print-header{display:block;text-align:center;padding:20px;border-bottom:2px solid #000;margin-bottom:20px}
+  .print-header h1{font-family:'Noto Naskh Arabic',serif;color:#000}
+  .screen{display:block !important}
+  .screen:not(.active){display:none !important}
+}
+
+@media (max-width:900px){
+  .stat-grid,.member-grid,.profile-stats{grid-template-columns:1fr 1fr}
+  .navbar{padding:0 16px}
+  .nav-links{gap:0}
+  .nav-link{padding:8px 10px;font-size:13px}
+  .main{padding:16px}
+  .zone-row{grid-template-columns:1fr;gap:6px}
+}
+@media (max-width:600px){
+  .stat-grid,.member-grid,.profile-stats{grid-template-columns:1fr}
+  .navbar-title{font-size:15px}
+  .radio-group{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="print-header">
+  <h1>منظومة تقييم فريق المحتوى</h1>
+  <p id="printDate"></p>
+</div>
+
+<nav class="navbar">
+  <div class="navbar-title">منظومة تقييم فريق المحتوى</div>
+  <ul class="nav-links">
+    <li><a href="#" class="nav-link active" data-screen="dashboard">لوحة الفريق</a></li>
+    <li><a href="#" class="nav-link" data-screen="evaluate">تسجيل تقييم</a></li>
+    <li><a href="#" class="nav-link" data-screen="decisions">منظومة القرار</a></li>
+    <li><a href="#" class="nav-link" data-screen="criteria">المعايير</a></li>
+    <li><a href="#" class="nav-link" data-screen="settings">الإعدادات</a></li>
+  </ul>
+</nav>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <section id="screen-dashboard" class="screen active">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">لوحة الفريق</h1>
+        <p class="page-subtitle">نظرة شاملة على أداء أعضاء الفريق</p>
+      </div>
+    </div>
+    <div class="stat-grid" id="statGrid"></div>
+    <div id="memberGridContainer"></div>
+  </section>
+
+  <!-- EVALUATE -->
+  <section id="screen-evaluate" class="screen">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">تسجيل تقييم جديد</h1>
+        <p class="page-subtitle">قيّم مهمة محدَّدة بناءً على المعايير السبعة</p>
+      </div>
+    </div>
+    <div class="card">
+      <form id="evalForm" novalidate>
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span>العضو المُقيَّم</label>
+          <select id="evalMember" class="form-control" required></select>
+        </div>
+
+        <div class="form-group">
+          <div class="checkbox-row">
+            <input type="checkbox" id="evalBaseline">
+            <label for="evalBaseline" style="margin:0;cursor:pointer">تقييم أولي (Baseline)</label>
+          </div>
+          <div id="baselineNote" style="display:none" class="info-box">سيُستخدم هذا التقييم كنقطة انطلاق مرجعية. لا يدخل في حساب المتوسط العام. يمكن تسجيل تقييم أولي واحد فقط لكل عضو.</div>
+          <div id="baselineExists" style="display:none" class="form-hint" style="color:var(--warning);font-weight:600">تم تسجيل التقييم الأولي لهذا العضو</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span>اسم المهمة</label>
+            <input type="text" id="evalTaskName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><span class="required">*</span>تاريخ المهمة</label>
+            <input type="date" id="evalTaskDate" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">الالتزام بالمواعيد التشغيلية</label>
+          <div class="radio-group">
+            <label class="radio-card selected" data-ontime="true">
+              <input type="radio" name="onTime" value="true" checked>سُلِّم في الموعد
+            </label>
+            <label class="radio-card" data-ontime="false">
+              <input type="radio" name="onTime" value="false">تأخّر في التسليم
+            </label>
+          </div>
+          <div id="lateReasonWrap" style="display:none;margin-top:10px">
+            <textarea id="lateReason" class="form-control" placeholder="سبب التأخر (اختياري)" rows="2"></textarea>
+          </div>
+        </div>
+
+        <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin:24px 0 16px;font-size:18px">المعايير السبعة</h3>
+        <div class="criteria-list" id="criteriaList"></div>
+
+        <div class="reminder-box">
+          <div class="reminder-text">تذكير: قيّم هذه المهمة المحددة، لا الانطباع العام عن العضو</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label"><span class="required">*</span>الدليل الموثَّق</label>
+          <textarea id="evalEvidence" class="form-control" placeholder="اذكر اسم النص أو المهمة، وسطر الخطأ أو موضع التميّز تحديداً" rows="3" required></textarea>
+          <div class="char-counter" id="evidenceCounter">0 / الحدّ الأدنى 20</div>
+          <div id="evidenceError" class="form-error" style="display:none">الدليل قصير جداً — صِف الموضع بدقة أكبر</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">ملاحظات عامة (اختياري)</label>
+          <textarea id="evalNotes" class="form-control" rows="2"></textarea>
+        </div>
+
+        <div class="live-preview">
+          <div class="live-preview-label">الدرجة الموزونة الحالية</div>
+          <div class="live-preview-value" id="livePreview">—</div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" class="btn btn-outline" onclick="showScreen('dashboard')">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ التقييم</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="screen-profile" class="screen">
+    <div class="page-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="btn btn-outline btn-sm" onclick="showScreen('dashboard')">→ العودة</button>
+        <div>
+          <h1 class="page-title" id="profileName">—</h1>
+          <p class="page-subtitle" id="profileMeta">—</p>
+        </div>
+      </div>
+      <div class="action-buttons" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-accent btn-sm" onclick="newEvalForCurrent()">تسجيل تقييم جديد</button>
+        <button class="btn btn-primary btn-sm" onclick="generateReport()">توليد تقرير بالذكاء الاصطناعي</button>
+        <button id="devPlanBtn" class="btn btn-outline btn-sm" onclick="generateDevPlan()" style="display:none">اقتراح خطة تطوير</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">طباعة</button>
+      </div>
+    </div>
+
+    <div id="lateBannerWrap"></div>
+    <div class="profile-stats" id="profileStats"></div>
+
+    <div class="chart-wrap">
+      <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px;font-size:17px">مسار الأداء</h3>
+      <canvas id="perfChart" height="250"></canvas>
+    </div>
+
+    <div class="card" style="margin-bottom:20px">
+      <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px;font-size:17px">تحليل المعايير</h3>
+      <table class="data-table" id="critTable">
+        <thead><tr><th>المعيار</th><th>المتوسط</th><th style="width:30%">التمثيل البصري</th><th>عدد التقييمات</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="profileDecision"></div>
+
+    <div class="card">
+      <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px;font-size:17px">سجلّ التقييمات</h3>
+      <div class="eval-list" id="evalList"></div>
+    </div>
+  </section>
+
+  <!-- DECISIONS -->
+  <section id="screen-decisions" class="screen">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">منظومة القرار</h1>
+        <p class="page-subtitle" id="decisionDate"></p>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="window.print()">تصدير / طباعة</button>
+    </div>
+    <div id="decisionsContent"></div>
+  </section>
+
+  <!-- CRITERIA -->
+  <section id="screen-criteria" class="screen">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">المعايير المرجعية</h1>
+        <p class="page-subtitle">دليل كامل لمنظومة التقييم</p>
+      </div>
+    </div>
+    <div id="criteriaRef"></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="screen-settings" class="screen">
+    <div class="page-header">
+      <h1 class="page-title">الإعدادات</h1>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="members">أعضاء الفريق</button>
+      <button class="tab-btn" data-tab="thresholds">عتبات القرار</button>
+      <button class="tab-btn" data-tab="api">مفتاح الذكاء الاصطناعي</button>
+      <button class="tab-btn" data-tab="data">البيانات</button>
+    </div>
+
+    <div id="tab-members" class="tab-content active">
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px">إضافة عضو جديد</h3>
+        <form id="addMemberForm">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group"><label class="form-label"><span class="required">*</span>الاسم</label><input type="text" id="memberName" class="form-control" required></div>
+            <div class="form-group"><label class="form-label"><span class="required">*</span>الدور الوظيفي</label><input type="text" id="memberRole" class="form-control" required></div>
+            <div class="form-group"><label class="form-label">تاريخ الانضمام</label><input type="date" id="memberJoinDate" class="form-control"></div>
+            <div class="form-group"><label class="form-label">ملاحظات</label><input type="text" id="memberNotes" class="form-control"></div>
+          </div>
+          <button type="submit" class="btn btn-primary">إضافة عضو</button>
+        </form>
+      </div>
+      <div class="card">
+        <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px">الأعضاء الحاليون</h3>
+        <table class="data-table" id="membersTable">
+          <thead><tr><th>الاسم</th><th>الدور</th><th>عدد التقييمات</th><th>الإجراءات</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-thresholds" class="tab-content">
+      <div class="card">
+        <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px">عتبات مناطق القرار</h3>
+        <div class="form-group"><label class="form-label">يستمر مع تميّز (≥)</label><input type="number" id="thrExcellent" class="form-control" step="0.1" min="1" max="5"></div>
+        <div class="form-group"><label class="form-label">يستمر مع تطوير (≥)</label><input type="number" id="thrGood" class="form-control" step="0.1" min="1" max="5"></div>
+        <div class="form-group"><label class="form-label">يحتاج تأهيلاً مكثّفاً (≥)</label><input type="number" id="thrDeveloping" class="form-control" step="0.1" min="1" max="5"></div>
+        <div class="form-hint" style="margin-bottom:16px">أقل من الأدنى يُرفع للإدارة</div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="saveThresholds()">حفظ</button>
+          <button class="btn btn-outline" onclick="resetThresholds()">إعادة ضبط الافتراضيات</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-api" class="tab-content">
+      <div class="card">
+        <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px">الاتصال بـ Claude API</h3>
+        <div class="form-group">
+          <label class="form-label">مفتاح Claude API</label>
+          <div class="password-input-wrap">
+            <input type="password" id="apiKey" class="form-control" placeholder="sk-ant-...">
+            <button type="button" class="btn btn-outline btn-sm" onclick="togglePwd()">إظهار</button>
+          </div>
+        </div>
+        <div class="info-box">المفتاح يُحفَظ محلياً على جهازك ولا يُرسَل لأي جهة خارجية سوى Anthropic عند توليد التقارير.</div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn btn-primary" onclick="saveApiKey()">حفظ</button>
+          <button class="btn btn-outline" onclick="testApi()">اختبار الاتصال</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-data" class="tab-content">
+      <div class="card">
+        <h3 style="font-family:'Noto Naskh Arabic',serif;color:var(--primary);margin-bottom:14px">النسخ الاحتياطي والاستيراد</h3>
+        <p style="color:var(--text-sec);margin-bottom:16px">احتفظ بنسخة من بياناتك أو استورد بيانات من جهاز آخر.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="exportData()">تصدير البيانات</button>
+          <label class="btn btn-outline" style="cursor:pointer">استيراد البيانات<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></label>
+        </div>
+      </div>
+      <div class="danger-zone">
+        <h4>منطقة الحذف النهائي</h4>
+        <p style="color:var(--text-sec);margin-bottom:14px;font-size:14px">هذا الإجراء لا يمكن التراجع عنه. سيتم حذف جميع الأعضاء والتقييمات.</p>
+        <div class="form-group"><input type="text" id="confirmDelete" class="form-control" placeholder='اكتب "أوافق على الحذف النهائي"'></div>
+        <button class="btn btn-danger" onclick="deleteAllData()">حذف جميع البيانات</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<button class="fab" onclick="newEval()">+ تسجيل تقييم جديد</button>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn btn-outline" onclick="closeModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit member modal -->
+<div class="modal-overlay" id="editMemberOverlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-title">تعديل بيانات العضو</div>
+      <button class="modal-close" onclick="document.getElementById('editMemberOverlay').classList.remove('active')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editMemberId">
+      <div class="form-group"><label class="form-label">الاسم</label><input type="text" id="editMemberName" class="form-control"></div>
+      <div class="form-group"><label class="form-label">الدور</label><input type="text" id="editMemberRole" class="form-control"></div>
+      <div class="form-group"><label class="form-label">تاريخ الانضمام</label><input type="date" id="editMemberJoin" class="form-control"></div>
+      <div class="form-group"><label class="form-label">ملاحظات</label><input type="text" id="editMemberNotes" class="form-control"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('editMemberOverlay').classList.remove('active')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveEditedMember()">حفظ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= CRITERIA DATA ========= */
+const CRITERIA = [
+  {key:'c1',name:'وضوح الفكرة والمقصد',weight:0.20,
+   def:'قدرة المحرّر على إيصال الرسالة المركزية للنصّ بحيث تُفهم من القراءة الأولى، دون لبس أو غموض أو حاجة لإعادة قراءة.',
+   scope:'يقيس ثلاثة أبعاد: وضوح الهدف (هل يُدرك القارئ لماذا أُرسلت إليه المراسلة)، وضوح الموقف (هل ما تقوله المؤسسة محدَّد لا قابل للتأويل)، وضوح المطلوب (هل المطلوب من المخاطَب واضح ومحدَّد).',
+   excludes:'سلامة اللغة، البنية، النبرة، الإيجاز',
+   why:'الوضوح هو الوظيفة الأولى للمراسلة المؤسسية. كل غموض يُترجَم إلى تأخر في الردّ، مخاطبات إيضاحية، أو قرار خاطئ.',
+   scale:[
+     {s:5,t:'واضحة من القراءة الأولى. الهدف والموقف والمطلوب مكشوفة بلا التباس'},
+     {s:4,t:'واضحة في مجملها مع موضع أو موضعين يحتاجان تأنقاً طفيفاً'},
+     {s:3,t:'مفهومة بعد قراءة ثانية. موضع غامض أو فكرة غير محدَّدة'},
+     {s:2,t:'تحتاج تفسيراً شفهياً. لبس واضح في الهدف أو المطلوب'},
+     {s:1,t:'غير مفهومة. القارئ لا يعرف ماذا تريد المؤسسة منه'}
+   ]},
+  {key:'c2',name:'البنية والترتيب المنطقي',weight:0.18,
+   def:'قدرة المحرّر على بناء النصّ بهيكل متماسك تتدرّج فيه الأفكار بترتيب يخدم الهدف، بحيث يقود القارئ خطوة خطوة من الافتتاحية إلى الخاتمة دون انقطاع أو ارتداد.',
+   scope:'ترتيب الفقرات (هل تتدرّج بمنطق سليم)، وحدة الفقرة (كل فقرة تحمل فكرة واحدة)، الانتقالات (روابط منطقية بين الفقرات)، الاتساق العام (كتلة واحدة متماسكة).',
+   excludes:'وضوح الفكرة، سلامة اللغة، الإيجاز',
+   why:'البنية تُحوّل الأفكار الجيّدة إلى نصّ جيّد. في المراسلات التنفيذية، البنية تُؤدّي وظيفة عملية لا جمالية.',
+   scale:[
+     {s:5,t:'بنية محكمة. فقرات مرتَّبة بمنطق سليم، كل فقرة تحمل فكرة واحدة، انتقالات سلسة'},
+     {s:4,t:'بنية متماسكة مع موضع واحد يحتاج تعديلاً طفيفاً'},
+     {s:3,t:'تؤدّي وظيفتها لكنّها غير محكمة. فقرة في غير موضعها أو انتقال غير سلس'},
+     {s:2,t:'بنية مُربكة. ترتيب غير منطقي، الفقرات تخلط الأفكار'},
+     {s:1,t:'لا توجد بنية. نصّ مجموعة فقرات متراصّة دون نسيج منطقي'}
+   ]},
+  {key:'c3',name:'سلامة اللغة وفصاحة التركيب',weight:0.15,
+   def:'التزام المحرّر بقواعد اللغة العربية الفصحى في الإملاء والنحو والتركيب، وانحيازه إلى الأساليب العربية الأصيلة بعيداً عن الترجمة الحرفية والركاكة.',
+   scope:'الإملاء (الهمزات، التاء المربوطة، علامات الترقيم)، النحو والصرف (الإعراب، تذكير الأفعال، حروف الجر)، الأسلوب والفصاحة (تجنّب الترجمة الحرفية، تجنّب الإفراط في "قام بـ" و"تمّ").',
+   excludes:'وضوح الفكرة، البنية، النبرة، الانضباط الاصطلاحي',
+   why:'خطأ نحوي أو إملائي في مراسلة مؤسسية لا يُقرأ على أنه سهو فردي، بل ينعكس على صورة المؤسسة.',
+   scale:[
+     {s:5,t:'خالٍ من الأخطاء. إملاء سليم، نحو محكم، أسلوب فصيح بلا تكلّف'},
+     {s:4,t:'سليم في مجمله مع خطأ أو خطأين طفيفَين لا يؤثّران على المعنى'},
+     {s:3,t:'يحتوي 3-5 أخطاء لا تُخلّ بالفهم لكنّها تُضعف الإحكام'},
+     {s:2,t:'أخطاء متعدّدة وملحوظة. ضعف نحوي أو تراكيب ركيكة'},
+     {s:1,t:'مليء بالأخطاء بدرجة تُفقد المؤسسة هيبتها'}
+   ]},
+  {key:'c4',name:'الدقة في المضمون',weight:0.15,
+   def:'التزام المحرّر بصحّة المعلومات والأرقام والأسماء والتواريخ والاقتباسات الواردة في النصّ، ومسؤوليته عن التحقّق منها قبل إدراجها.',
+   scope:'صحّة الأسماء (أشخاص، جهات، مناصب)، صحّة الأرقام والإحصاءات، صحّة التواريخ، صحّة الاقتباسات، صحّة الوقائع.',
+   excludes:'سلامة اللغة، الانضباط الاصطلاحي',
+   why:'في المؤسسات السيادية، الخطأ في المعلومة كارثيّ. خطأ في اسم وزير أو رقم صفقة يُحدث ضرراً مؤسسياً يفوق ضرر الأخطاء اللغوية.',
+   scale:[
+     {s:5,t:'جميع المعلومات والأرقام والأسماء صحيحة ومدقَّقة'},
+     {s:4,t:'صحيحة في مجملها مع تفصيل واحد يحتاج تدقيقاً'},
+     {s:3,t:'صحيحة جوهرياً مع خطأ غير حرج'},
+     {s:2,t:'خطأ واضح يؤثّر على مصداقية النصّ'},
+     {s:1,t:'خطأ فادح يستوجب اعتذاراً أو تصحيحاً علنياً'}
+   ]},
+  {key:'c5',name:'الانضباط الاصطلاحي والبروتوكولي',weight:0.12,
+   def:'التزام المحرّر بالاتّساق في استخدام المصطلحات والأسماء، وبقواعد البروتوكول الرسمي في الألقاب والمسمّيات الوظيفية وترتيب الجهات.',
+   scope:'اتساق المصطلحات (المصطلح ذاته في كل النصّ)، اتساق الأسماء (اسم الجهة بالطريقة ذاتها)، الالتزام بالبروتوكول (لقب صحيح، ترتيب جهات، مسمّى وظيفي محدَّث)، الانضباط في كتابة الأسماء الأجنبية.',
+   excludes:'الدقة في المضمون، سلامة اللغة',
+   why:'الانضباط الاصطلاحي يُحوّل النصوص الفردية إلى هوية مؤسسية موحَّدة. خطأ في لقب وزير لا يُقرأ على أنه سهو.',
+   scale:[
+     {s:5,t:'اتّساق تامّ في المصطلحات والأسماء، التزام كامل بالبروتوكول'},
+     {s:4,t:'مراعى في مجمله مع تفصيل طفيف في موضع واحد'},
+     {s:3,t:'عدم اتّساق ملحوظ في موضعين أو ثلاثة'},
+     {s:2,t:'اضطراب واضح في الاصطلاح أو خطأ بروتوكولي محرج'},
+     {s:1,t:'خلل بنيويّ يُحرج المؤسسة'}
+   ]},
+  {key:'c6',name:'ملاءمة النبرة المؤسسية',weight:0.12,
+   def:'قدرة المحرّر على ضبط نبرة النصّ بحيث تتوافق مع طبيعة المؤسسة وموقع المخاطَب وغرض المراسلة.',
+   scope:'ملاءمة النبرة لطبيعة المؤسسة (صوت سيادي رصين لا ترويجي)، ملاءمة النبرة للمخاطَب (تختلف بحسب مَن يُكتَب إليه)، ملاءمة النبرة للغرض (تهنئة تختلف عن متابعة)، تجنّب الانحرافات (تفخيم مُبالَغ، حدّة لا تليق، برود مُفرط).',
+   excludes:'سلامة اللغة، الانضباط الاصطلاحي',
+   why:'النبرة هي بصمة المؤسسة الصوتية. كاتب بلغة سليمة وبنية محكمة لكن بنبرة تجارية يخذل هوية المؤسسة.',
+   scale:[
+     {s:5,t:'محكمة الضبط. تجمع الرصانة السيادية مع ملاءمة السياق'},
+     {s:4,t:'ملائمة في مجملها مع موضع واحد يحتاج تأنيقاً طفيفاً'},
+     {s:3,t:'تؤدّي وظيفتها لكنّها غير دقيقة. انزلاق طفيف نحو الإنشائية'},
+     {s:2,t:'غير ملائمة. تفخيم مُبالَغ أو نبرة تجارية أو حدّة لا تليق'},
+     {s:1,t:'تخرج كلياً عن هوية المؤسسة'}
+   ]},
+  {key:'c7',name:'الإيجاز والاقتصاد اللغوي',weight:0.08,
+   def:'قدرة المحرّر على إيصال المعنى بأقلّ عدد ممكن من الكلمات دون الإخلال بالاكتمال، وتجنّبه للحشو والتكرار وأدوات الربط الزائدة.',
+   scope:'خلوّ النصّ من الحشو، تجنّب التكرار، الاقتصاد في أدوات الربط والحشو الإنشائي.',
+   excludes:'وضوح الفكرة (إيجاز قاسٍ يُفقد المعنى يُعاقَب على النقص لا يُكافأ على الإيجاز)',
+   why:'الإيجاز احترام لوقت القارئ ومؤشّر على وضوح التفكير.',
+   scale:[
+     {s:5,t:'كل كلمة تكسب موقعها. لا حشو، لا تكرار، لا إسراف'},
+     {s:4,t:'جيّد في مجمله مع موضع أو اثنين يحتملان تقليماً طفيفاً'},
+     {s:3,t:'يحقّق غرضه لكنّه أطول ممّا يستحقّ'},
+     {s:2,t:'إسهاب واضح. النصّ ضعفا حجمه المطلوب'},
+     {s:1,t:'إسهاب مُرهق. الفكرة الواحدة تُقال خمس مرّات'}
+   ]}
+];
+
+const SCORE_LABELS = {1:'غير مقبول',2:'ضعيف',3:'مقبول',4:'جيد جداً',5:'ممتاز'};
+const ARABIC_NUMS = {1:'١',2:'٢',3:'٣',4:'٤',5:'٥'};
+
+const DEFAULT_DATA = {
+  members:[],
+  settings:{thresholds:{excellent:4.2,good:3.5,developing:2.8},minEvaluationsForDecision:8,evaluationPeriodDays:60},
+  apiKey:''
+};
+
+let state = {currentMemberId:null, currentScreen:'dashboard', evalScores:{}};
+
+/* ========= UTILS ========= */
+function generateId(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}
+function formatDate(iso){if(!iso)return '—';const d=new Date(iso);return d.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'})}
+function formatShortDate(iso){if(!iso)return '';const d=new Date(iso);return `${d.getDate()}/${d.getMonth()+1}`}
+function calcWeightedScore(scores){let s=0;CRITERIA.forEach(c=>{s+=(scores[c.key]||0)*c.weight});return s}
+function getNonBaseline(m){return (m.evaluations||[]).filter(e=>!e.isBaseline)}
+function getBaseline(m){return m.baselineAssessment}
+function getMemberAverage(m){const evs=getNonBaseline(m);if(!evs.length)return null;return evs.reduce((s,e)=>s+calcWeightedScore(e.scores),0)/evs.length}
+function getMemberBaseline(m){const b=getBaseline(m);return b?calcWeightedScore(b.scores):null}
+function getTrajectory(m){const a=getMemberAverage(m);const b=getMemberBaseline(m);if(a===null||b===null)return null;return a-b}
+function getLateCount(m){return (m.evaluations||[]).filter(e=>!e.isBaseline && e.on_time===false).length}
+
+function getZone(score,thr){
+  if(score===null||score===undefined)return{key:'none',label:'لا يوجد متوسط',color:'#9aa5b1'};
+  if(score>=thr.excellent)return{key:'excellent',label:'يستمر مع تميّز',color:'#2D6A4F'};
+  if(score>=thr.good)return{key:'good',label:'يستمر مع تطوير',color:'#1B3A5C'};
+  if(score>=thr.developing)return{key:'developing',label:'يحتاج تأهيلاً مكثّفاً',color:'#E76F51'};
+  return{key:'critical',label:'يُرفع للإدارة',color:'#C62828'};
+}
+
+function saveData(d){localStorage.setItem('team_eval_data',JSON.stringify(d))}
+function loadData(){try{const r=localStorage.getItem('team_eval_data');if(!r)return JSON.parse(JSON.stringify(DEFAULT_DATA));const p=JSON.parse(r);if(!p.settings)p.settings=DEFAULT_DATA.settings;if(!p.settings.thresholds)p.settings.thresholds=DEFAULT_DATA.settings.thresholds;return p}catch(e){return JSON.parse(JSON.stringify(DEFAULT_DATA))}}
+let DATA = loadData();
+
+function showToast(msg,type='success'){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000);
+}
+
+function showScreen(name,extra){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  const tgt=document.getElementById('screen-'+name);if(tgt)tgt.classList.add('active');
+  const nav=document.querySelector(`.nav-link[data-screen="${name}"]`);if(nav)nav.classList.add('active');
+  state.currentScreen=name;
+  if(name==='dashboard')renderDashboard();
+  if(name==='evaluate')renderEvalForm(extra);
+  if(name==='profile')renderProfile();
+  if(name==='decisions')renderDecisions();
+  if(name==='criteria')renderCriteria();
+  if(name==='settings')renderSettings();
+  window.scrollTo(0,0);
+}
+
+/* ========= DASHBOARD ========= */
+function renderDashboard(){
+  const thr=DATA.settings.thresholds;
+  const members=DATA.members;
+  const now=new Date();const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  let monthEvals=0,critical=0,excellent=0;
+  members.forEach(m=>{
+    (m.evaluations||[]).forEach(e=>{if(!e.isBaseline&&new Date(e.createdAt)>=monthStart)monthEvals++});
+    const avg=getMemberAverage(m);
+    if(avg!==null){const z=getZone(avg,thr);if(z.key==='critical'||z.key==='developing'||getLateCount(m)>=3)critical++;if(z.key==='excellent')excellent++}
+  });
+  const stats=[
+    {l:'إجمالي الأعضاء',v:members.length,c:''},
+    {l:'تقييمات هذا الشهر',v:monthEvals,c:''},
+    {l:'في المنطقة الحرجة',v:critical,c:'danger'},
+    {l:'يستمرون بتميّز',v:excellent,c:'success'}
+  ];
+  document.getElementById('statGrid').innerHTML=stats.map(s=>`<div class="stat-card ${s.c}"><div class="stat-label">${s.l}</div><div class="stat-value">${s.v}</div></div>`).join('');
+
+  const container=document.getElementById('memberGridContainer');
+  if(!members.length){
+    container.innerHTML=`<div class="empty-state card"><h3>لا يوجد أعضاء بعد</h3><p>لم يُضَف أي عضو بعد. اذهب إلى الإعدادات لإضافة أعضاء الفريق.</p><button class="btn btn-primary" style="margin-top:16px" onclick="showScreen('settings')">الذهاب إلى الإعدادات</button></div>`;
+    return;
+  }
+  container.innerHTML=`<div class="member-grid">${members.map(m=>renderMemberCard(m,thr)).join('')}</div>`;
+}
+
+function renderMemberCard(m,thr){
+  const avg=getMemberAverage(m);
+  const zone=getZone(avg,thr);
+  const traj=getTrajectory(m);
+  const late=getLateCount(m);
+  const initials=m.name.trim().split(/\s+/).slice(0,2).map(s=>s[0]).join('');
+  const avgDisplay=avg!==null?avg.toFixed(2):'—';
+  let trajHtml='<span class="trajectory">—</span>';
+  if(traj!==null){
+    const cls=traj>0.05?'up':traj<-0.05?'down':'';
+    const arrow=traj>0.05?'↑':traj<-0.05?'↓':'→';
+    trajHtml=`<span class="trajectory ${cls}">${arrow} ${traj>=0?'+':''}${traj.toFixed(2)}</span>`;
+  }
+  let lateBadge='';
+  if(late>=3)lateBadge=`<span class="late-badge critical">تأخّر ${late}</span>`;
+  else if(late>=1)lateBadge=`<span class="late-badge">تأخّر ${late}</span>`;
+  return `<div class="member-card">
+    <div class="member-avatar">${initials||'؟'}</div>
+    <div class="member-info">
+      <div class="member-name">${escapeHtml(m.name)}</div>
+      <div class="member-role">${escapeHtml(m.role||'')}</div>
+      <div class="member-meta">
+        <span class="zone-badge" style="background:${zone.color}">${zone.label}</span>
+        ${trajHtml} ${lateBadge}
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="openProfile('${m.id}')">عرض الملف</button>
+    </div>
+    <div class="member-score">
+      <div class="member-score-value" style="color:${zone.color}">${avgDisplay}</div>
+      <div class="member-score-label">من 5</div>
+    </div>
+  </div>`;
+}
+
+function openProfile(id){state.currentMemberId=id;showScreen('profile')}
+
+/* ========= EVAL FORM ========= */
+function renderEvalForm(preselectId){
+  const sel=document.getElementById('evalMember');
+  sel.innerHTML='<option value="">— اختر العضو —</option>'+DATA.members.map(m=>`<option value="${m.id}">${escapeHtml(m.name)} — ${escapeHtml(m.role||'')}</option>`).join('');
+  if(preselectId)sel.value=preselectId;
+
+  // criteria
+  const cl=document.getElementById('criteriaList');
+  cl.innerHTML=CRITERIA.map(c=>`
+    <div class="criterion-row" data-key="${c.key}">
+      <div class="criterion-head">
+        <div class="criterion-name">${c.name}</div>
+        <div class="weight-badge">${Math.round(c.weight*100)}%</div>
+      </div>
+      <div class="score-buttons">
+        ${[1,2,3,4,5].map(n=>`<button type="button" class="score-btn" data-score="${n}">${ARABIC_NUMS[n]}</button>`).join('')}
+      </div>
+      <div class="score-label-live" data-label></div>
+    </div>
+  `).join('');
+
+  // reset state
+  state.evalScores={};
+  document.getElementById('evalForm').reset();
+  document.getElementById('evalTaskDate').value=new Date().toISOString().substring(0,10);
+  document.getElementById('livePreview').textContent='—';
+  document.getElementById('evidenceCounter').textContent='0 / الحدّ الأدنى 20';
+  document.getElementById('evidenceCounter').classList.remove('warn');
+  document.getElementById('evidenceError').style.display='none';
+  document.getElementById('baselineNote').style.display='none';
+  document.getElementById('baselineExists').style.display='none';
+  document.getElementById('lateReasonWrap').style.display='none';
+  document.querySelectorAll('.radio-card').forEach(r=>r.classList.remove('selected'));
+  document.querySelector('.radio-card[data-ontime="true"]').classList.add('selected');
+  document.querySelector('.radio-card[data-ontime="true"] input').checked=true;
+
+  // listeners
+  cl.querySelectorAll('.score-btn').forEach(b=>{
+    b.onclick=function(){
+      const row=this.closest('.criterion-row');
+      const key=row.dataset.key;
+      row.querySelectorAll('.score-btn').forEach(x=>x.classList.remove('selected'));
+      this.classList.add('selected');
+      const s=+this.dataset.score;
+      state.evalScores[key]=s;
+      row.querySelector('[data-label]').textContent=SCORE_LABELS[s];
+      updateLivePreview();
+    };
+  });
+
+  document.querySelectorAll('.radio-card').forEach(card=>{
+    card.onclick=function(){
+      document.querySelectorAll('.radio-card').forEach(r=>r.classList.remove('selected'));
+      this.classList.add('selected');
+      const inp=this.querySelector('input');inp.checked=true;
+      document.getElementById('lateReasonWrap').style.display=inp.value==='false'?'block':'none';
+    };
+  });
+
+  sel.onchange=function(){
+    const m=DATA.members.find(x=>x.id===this.value);
+    const cb=document.getElementById('evalBaseline');
+    const ex=document.getElementById('baselineExists');
+    if(m&&m.baselineAssessment){cb.checked=false;cb.disabled=true;ex.style.display='block'}
+    else{cb.disabled=false;ex.style.display='none'}
+  };
+
+  document.getElementById('evalBaseline').onchange=function(){
+    document.getElementById('baselineNote').style.display=this.checked?'block':'none';
+  };
+
+  const ev=document.getElementById('evalEvidence');
+  ev.oninput=function(){
+    const len=this.value.length;
+    const c=document.getElementById('evidenceCounter');
+    c.textContent=`${len} / الحدّ الأدنى 20`;
+    if(len>0&&len<20){c.classList.add('warn');document.getElementById('evidenceError').style.display='block'}
+    else{c.classList.remove('warn');document.getElementById('evidenceError').style.display='none'}
+  };
+
+  document.getElementById('evalForm').onsubmit=function(e){e.preventDefault();submitEval()};
+}
+
+function updateLivePreview(){
+  const ws=calcWeightedScore(state.evalScores);
+  const filled=CRITERIA.every(c=>state.evalScores[c.key]);
+  document.getElementById('livePreview').textContent=filled?ws.toFixed(2):'—';
+}
+
+function submitEval(){
+  const memberId=document.getElementById('evalMember').value;
+  if(!memberId)return showToast('الرجاء اختيار العضو','error');
+  const task=document.getElementById('evalTaskName').value.trim();
+  if(!task)return showToast('الرجاء إدخال اسم المهمة','error');
+  const date=document.getElementById('evalTaskDate').value;
+  if(!date)return showToast('الرجاء تحديد تاريخ المهمة','error');
+  const ev=document.getElementById('evalEvidence').value.trim();
+  if(ev.length<20)return showToast('الدليل الموثَّق يجب ألا يقل عن 20 حرفاً','error');
+  if(!CRITERIA.every(c=>state.evalScores[c.key]))return showToast('الرجاء تحديد درجة لكل معيار','error');
+  const isBaseline=document.getElementById('evalBaseline').checked;
+  const onTime=document.querySelector('input[name="onTime"]:checked').value==='true';
+  const lateReason=document.getElementById('lateReason').value.trim();
+  const notes=document.getElementById('evalNotes').value.trim();
+  const m=DATA.members.find(x=>x.id===memberId);
+  if(isBaseline&&m.baselineAssessment)return showToast('تم تسجيل التقييم الأولي لهذا العضو سابقاً','error');
+
+  const evObj={
+    id:generateId(),taskName:task,taskDate:date,evidenceNote:ev,
+    scores:{...state.evalScores},generalNotes:notes,on_time:onTime,
+    lateReason:onTime?'':lateReason,isBaseline,createdAt:new Date().toISOString()
+  };
+  if(isBaseline){m.baselineAssessment=evObj}
+  if(!m.evaluations)m.evaluations=[];
+  m.evaluations.push(evObj);
+  saveData(DATA);
+  showToast('تم حفظ التقييم بنجاح');
+  state.currentMemberId=memberId;
+  showScreen('profile');
+}
+
+function newEval(){state.currentMemberId=null;showScreen('evaluate')}
+function newEvalForCurrent(){showScreen('evaluate',state.currentMemberId)}
+
+/* ========= PROFILE ========= */
+function renderProfile(){
+  const m=DATA.members.find(x=>x.id===state.currentMemberId);
+  if(!m){showScreen('dashboard');return}
+  const thr=DATA.settings.thresholds;
+  const avg=getMemberAverage(m);
+  const baseline=getMemberBaseline(m);
+  const traj=getTrajectory(m);
+  const late=getLateCount(m);
+  const zone=getZone(avg,thr);
+  const nonBaseline=getNonBaseline(m);
+
+  document.getElementById('profileName').textContent=m.name;
+  document.getElementById('profileMeta').textContent=`${m.role||''}${m.joinDate?' — انضم في '+formatDate(m.joinDate):''}`;
+
+  document.getElementById('lateBannerWrap').innerHTML = late>=3 ? `<div class="alert-banner">تنبيه: تجاوز الحدّ المسموح به للتأخر في التسليم — ${late} حالات تأخّر</div>` : '';
+
+  const stats=[
+    {l:'عدد التقييمات',v:nonBaseline.length},
+    {l:'المتوسط الحالي',v:avg!==null?avg.toFixed(2):'—',color:zone.color},
+    {l:'التقييم الأولي',v:baseline!==null?baseline.toFixed(2):'—'},
+    {l:'المسار',v:traj!==null?(traj>=0?'+':'')+traj.toFixed(2):'—',color:traj!==null?(traj>0.05?'#2D6A4F':traj<-0.05?'#C62828':'#5A6A7A'):''}
+  ];
+  document.getElementById('profileStats').innerHTML=stats.map(s=>`<div class="stat-card"><div class="stat-label">${s.l}</div><div class="stat-value" style="${s.color?'color:'+s.color:''}">${s.v}</div></div>`).join('');
+
+  // chart
+  drawPerformanceChart('perfChart',m);
+
+  // criteria table
+  const tb=document.querySelector('#critTable tbody');
+  tb.innerHTML=CRITERIA.map(c=>{
+    const vals=nonBaseline.map(e=>e.scores[c.key]).filter(v=>v);
+    const avg=vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0;
+    const pct=(avg/5)*100;
+    const color=avg>=4.2?'#2D6A4F':avg>=3.5?'#1B3A5C':avg>=2.8?'#E76F51':'#C62828';
+    return `<tr><td>${c.name}</td><td><strong style="color:${color}">${vals.length?avg.toFixed(2):'—'}</strong></td><td><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div></td><td>${vals.length}</td></tr>`;
+  }).join('');
+
+  // decision
+  let decisionText='';
+  if(avg===null)decisionText='لا تتوفر بعد تقييمات كافية لاتخاذ قرار.';
+  else if(zone.key==='excellent')decisionText='أداء متميّز يُكافأ بمواصلة المسار وتفويض مهام ذات تعقيد أعلى.';
+  else if(zone.key==='good')decisionText='أداء مستقرّ. يُوصى بالمتابعة مع تطوير نقاط محدَّدة لرفع المستوى.';
+  else if(zone.key==='developing')decisionText='يحتاج تأهيلاً مكثّفاً عبر خطة تطوير محدَّدة وجلسات متابعة دورية.';
+  else decisionText='يُرفَع الملف للإدارة لاتّخاذ قرار إداريّ.';
+  document.getElementById('profileDecision').innerHTML=`<div class="decision-box" style="background:${zone.color}"><h3>${zone.label}</h3><p>${decisionText}</p></div>`;
+
+  document.getElementById('devPlanBtn').style.display=(zone.key==='developing'||zone.key==='critical')?'inline-flex':'none';
+
+  // eval list
+  const evs=(m.evaluations||[]).slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  document.getElementById('evalList').innerHTML=evs.length?evs.map(e=>renderEvalItem(e)).join(''):'<p style="color:var(--text-sec);text-align:center;padding:20px">لا توجد تقييمات بعد</p>';
+}
+
+function renderEvalItem(e){
+  const ws=calcWeightedScore(e.scores);
+  const zone=getZone(ws,DATA.settings.thresholds);
+  const onTimeIcon=e.on_time?'<span style="color:var(--success);font-weight:700">✓ في الموعد</span>':'<span style="color:var(--danger);font-weight:700">✗ متأخّر</span>';
+  return `<div class="eval-item" onclick="this.classList.toggle('expanded')">
+    <div class="eval-head">
+      <div>
+        <div class="eval-task">${escapeHtml(e.taskName)} ${e.isBaseline?'<span class="weight-badge" style="background:var(--primary)">أولي</span>':''}</div>
+        <div class="eval-date">${formatDate(e.taskDate)} — ${onTimeIcon}</div>
+      </div>
+      <div class="eval-score-pill" style="background:${zone.color}">${ws.toFixed(2)}</div>
+    </div>
+    <div class="eval-evidence">${escapeHtml(e.evidenceNote.substring(0,180))}${e.evidenceNote.length>180?'…':''}</div>
+    <div class="eval-detail">
+      <div class="eval-criteria-grid">${CRITERIA.map(c=>`<div class="eval-crit"><span>${c.name}</span><strong>${e.scores[c.key]||'—'}</strong></div>`).join('')}</div>
+      <div style="margin-top:12px"><strong>الدليل:</strong> ${escapeHtml(e.evidenceNote)}</div>
+      ${e.generalNotes?`<div style="margin-top:8px"><strong>ملاحظات:</strong> ${escapeHtml(e.generalNotes)}</div>`:''}
+      ${e.lateReason?`<div style="margin-top:8px;color:var(--warning)"><strong>سبب التأخر:</strong> ${escapeHtml(e.lateReason)}</div>`:''}
+    </div>
+  </div>`;
+}
+
+/* ========= CHART ========= */
+function drawPerformanceChart(id,m){
+  const canvas=document.getElementById(id);
+  const ctx=canvas.getContext('2d');
+  const rect=canvas.parentElement.getBoundingClientRect();
+  const W=rect.width-40;const H=250;
+  canvas.width=W*window.devicePixelRatio;canvas.height=H*window.devicePixelRatio;
+  canvas.style.width=W+'px';canvas.style.height=H+'px';
+  ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+  ctx.clearRect(0,0,W,H);
+
+  const evs=getNonBaseline(m).slice().sort((a,b)=>new Date(a.taskDate)-new Date(b.taskDate));
+  if(!evs.length){
+    ctx.fillStyle='#5A6A7A';ctx.font='16px Tajawal';ctx.textAlign='center';
+    ctx.fillText('لا توجد تقييمات بعد',W/2,H/2);return;
+  }
+
+  const padL=50,padR=30,padT=30,padB=40;
+  const innerW=W-padL-padR,innerH=H-padT-padB;
+
+  // grid
+  ctx.strokeStyle='#E2E6EC';ctx.lineWidth=1;
+  ctx.fillStyle='#5A6A7A';ctx.font='12px Tajawal';ctx.textAlign='left';
+  for(let i=1;i<=5;i++){
+    const y=padT+innerH-((i-1)/4)*innerH;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.fillText(i,W-padR+6,y+4);
+  }
+
+  // baseline
+  const baseline=getMemberBaseline(m);
+  if(baseline!==null){
+    const y=padT+innerH-((baseline-1)/4)*innerH;
+    ctx.strokeStyle='#C9A84C';ctx.setLineDash([5,4]);ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(W-padR,y);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#C9A84C';ctx.font='bold 11px Tajawal';ctx.textAlign='right';
+    ctx.fillText('الأساس: '+baseline.toFixed(2),W-padR-4,y-6);
+  }
+
+  const thr=DATA.settings.thresholds;
+  const pts=evs.map((e,i)=>{
+    const x=padL+(evs.length===1?innerW/2:(i/(evs.length-1))*innerW);
+    const s=calcWeightedScore(e.scores);
+    const y=padT+innerH-((s-1)/4)*innerH;
+    return{x,y,s,date:e.taskDate};
+  });
+
+  // line
+  ctx.strokeStyle='#1B3A5C';ctx.lineWidth=2.5;ctx.beginPath();
+  pts.forEach((p,i)=>{i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)});
+  ctx.stroke();
+
+  // dots
+  pts.forEach(p=>{
+    const z=getZone(p.s,thr);
+    ctx.fillStyle=z.color;ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(p.x,p.y,2.5,0,Math.PI*2);ctx.fill();
+  });
+
+  // x labels
+  ctx.fillStyle='#5A6A7A';ctx.font='11px Tajawal';ctx.textAlign='center';
+  const step=Math.max(1,Math.ceil(pts.length/6));
+  pts.forEach((p,i)=>{if(i%step===0||i===pts.length-1)ctx.fillText(formatShortDate(p.date),p.x,H-padB+18)});
+}
+
+/* ========= DECISIONS ========= */
+function renderDecisions(){
+  document.getElementById('decisionDate').textContent=formatDate(new Date().toISOString());
+  const thr=DATA.settings.thresholds;
+  const buckets={excellent:[],good:[],developing:[],critical:[]};
+  DATA.members.forEach(m=>{
+    const avg=getMemberAverage(m);
+    if(avg===null)return;
+    const z=getZone(avg,thr);
+    if(buckets[z.key])buckets[z.key].push(m);
+  });
+  const zones=[
+    {key:'excellent',label:'يستمر مع تميّز',color:'#2D6A4F',rec:'مواصلة المسار وتفويض مهام ذات تعقيد أعلى'},
+    {key:'good',label:'يستمر مع تطوير',color:'#1B3A5C',rec:'متابعة دورية مع تطوير نقاط محدَّدة'},
+    {key:'developing',label:'يحتاج تأهيلاً مكثّفاً',color:'#E76F51',rec:'خطة تطوير مكثَّفة بمواعيد محدَّدة'},
+    {key:'critical',label:'يُرفع للإدارة',color:'#C62828',rec:'رفع الملف للإدارة لاتّخاذ قرار إداريّ'}
+  ];
+  let html='';
+  zones.forEach(z=>{
+    const list=buckets[z.key];
+    html+=`<div class="zone-section"><div class="zone-header" style="background:${z.color}"><span>${z.label}</span><span>${list.length} ${list.length===1?'عضو':'أعضاء'}</span></div><div class="zone-body">`;
+    if(!list.length){html+='<div class="zone-empty">لا يوجد أعضاء في هذه المنطقة</div>'}
+    else{
+      list.forEach(m=>{
+        const avg=getMemberAverage(m);const tr=getTrajectory(m);const late=getLateCount(m);
+        html+=`<div class="zone-row">
+          <strong>${escapeHtml(m.name)}</strong>
+          <span>المتوسط: <strong>${avg.toFixed(2)}</strong></span>
+          <span>المسار: ${tr!==null?(tr>=0?'+':'')+tr.toFixed(2):'—'}</span>
+          <span>تأخّر: ${late}</span>
+          <span style="font-size:13px;color:var(--text-sec)">${z.rec}</span>
+          <button class="btn btn-outline btn-sm" onclick="openProfile('${m.id}')">عرض الملف</button>
+        </div>`;
+      });
+    }
+    html+='</div></div>';
+  });
+  document.getElementById('decisionsContent').innerHTML=html;
+}
+
+/* ========= CRITERIA REF ========= */
+function renderCriteria(){
+  const c=document.getElementById('criteriaRef');
+  c.innerHTML=CRITERIA.map(cr=>`
+    <div class="criterion-card">
+      <h3><span>${cr.name}</span><span class="weight-badge">${Math.round(cr.weight*100)}%</span></h3>
+      <div class="criterion-section"><span class="criterion-section-label">التعريف</span><div class="criterion-section-body">${cr.def}</div></div>
+      <div class="criterion-section"><span class="criterion-section-label">النطاق</span><div class="criterion-section-body">${cr.scope}</div></div>
+      <div class="criterion-section"><span class="criterion-section-label">ما لا يشمله</span><div class="criterion-section-body">${cr.excludes}</div></div>
+      <div class="criterion-section"><span class="criterion-section-label">لماذا اختير</span><div class="criterion-section-body">${cr.why}</div></div>
+      <div class="criterion-section"><span class="criterion-section-label">سلّم التقييم</span>
+        <table class="scale-table"><tbody>
+          ${cr.scale.map(s=>`<tr><th>${s.s} — ${SCORE_LABELS[s.s]}</th><td>${s.t}</td></tr>`).join('')}
+        </tbody></table>
+      </div>
+    </div>
+  `).join('')+`
+    <div class="criterion-card" style="border-top-color:var(--danger)">
+      <h3><span>الالتزام بالمواعيد التشغيلية</span><span class="weight-badge" style="background:var(--danger)">معيار إقصائي</span></h3>
+      <div class="criterion-section"><span class="criterion-section-label">التعريف</span><div class="criterion-section-body">التزام المحرّر بتسليم المهام في المواعيد المحدَّدة.</div></div>
+      <div class="criterion-section"><span class="criterion-section-label">طبيعة المعيار</span><div class="criterion-section-body">لا يدخل في الدرجة الموزونة. يُرصَد كقيمة منطقية لكل تقييم: في الموعد أو متأخّر.</div></div>
+      <div class="criterion-section"><span class="criterion-section-label">حدّ الإنذار</span><div class="criterion-section-body" style="color:var(--danger);font-weight:600">ثلاث حالات تأخّر أو أكثر تُفعِّل تنبيهاً حرجاً يظهر في الملف الشخصي بصورة دائمة.</div></div>
+    </div>`;
+}
+
+/* ========= SETTINGS ========= */
+function renderSettings(){
+  // members table
+  const tb=document.querySelector('#membersTable tbody');
+  if(!DATA.members.length){tb.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--text-sec)">لا يوجد أعضاء بعد</td></tr>'}
+  else{
+    tb.innerHTML=DATA.members.map(m=>`<tr>
+      <td><strong>${escapeHtml(m.name)}</strong></td>
+      <td>${escapeHtml(m.role||'')}</td>
+      <td>${(m.evaluations||[]).length}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editMember('${m.id}')">تعديل</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmDeleteMember('${m.id}')">حذف</button>
+      </td>
+    </tr>`).join('');
+  }
+  // thresholds
+  document.getElementById('thrExcellent').value=DATA.settings.thresholds.excellent;
+  document.getElementById('thrGood').value=DATA.settings.thresholds.good;
+  document.getElementById('thrDeveloping').value=DATA.settings.thresholds.developing;
+  // api
+  document.getElementById('apiKey').value=DATA.apiKey||'';
+}
+
+document.getElementById('addMemberForm').onsubmit=function(e){
+  e.preventDefault();
+  const name=document.getElementById('memberName').value.trim();
+  const role=document.getElementById('memberRole').value.trim();
+  if(!name||!role)return showToast('الاسم والدور مطلوبان','error');
+  DATA.members.push({
+    id:generateId(),name,role,
+    joinDate:document.getElementById('memberJoinDate').value||new Date().toISOString().substring(0,10),
+    baselineAssessment:null,evaluations:[],
+    notes:document.getElementById('memberNotes').value.trim()
+  });
+  saveData(DATA);showToast('تم إضافة العضو');this.reset();renderSettings();
+};
+
+function editMember(id){
+  const m=DATA.members.find(x=>x.id===id);if(!m)return;
+  document.getElementById('editMemberId').value=id;
+  document.getElementById('editMemberName').value=m.name;
+  document.getElementById('editMemberRole').value=m.role||'';
+  document.getElementById('editMemberJoin').value=m.joinDate||'';
+  document.getElementById('editMemberNotes').value=m.notes||'';
+  document.getElementById('editMemberOverlay').classList.add('active');
+}
+function saveEditedMember(){
+  const id=document.getElementById('editMemberId').value;
+  const m=DATA.members.find(x=>x.id===id);if(!m)return;
+  m.name=document.getElementById('editMemberName').value.trim();
+  m.role=document.getElementById('editMemberRole').value.trim();
+  m.joinDate=document.getElementById('editMemberJoin').value;
+  m.notes=document.getElementById('editMemberNotes').value.trim();
+  saveData(DATA);showToast('تم الحفظ');
+  document.getElementById('editMemberOverlay').classList.remove('active');
+  renderSettings();
+}
+function confirmDeleteMember(id){
+  const m=DATA.members.find(x=>x.id===id);if(!m)return;
+  showConfirmModal(`حذف العضو`, `<p>لحذف <strong>${escapeHtml(m.name)}</strong>، اكتب اسمه كاملاً للتأكيد:</p><input type="text" id="delConfirmInput" class="form-control" style="margin-top:10px">`,
+    ()=>{
+      const v=document.getElementById('delConfirmInput').value.trim();
+      if(v!==m.name){showToast('الاسم غير مطابق','error');return false}
+      DATA.members=DATA.members.filter(x=>x.id!==id);
+      saveData(DATA);showToast('تم الحذف');renderSettings();return true;
+    },'btn-danger','حذف نهائي');
+}
+
+function saveThresholds(){
+  const e=parseFloat(document.getElementById('thrExcellent').value);
+  const g=parseFloat(document.getElementById('thrGood').value);
+  const d=parseFloat(document.getElementById('thrDeveloping').value);
+  if(!(e>g&&g>d))return showToast('العتبات يجب أن تكون متناقصة (تميّز > تطوير > تأهيل)','error');
+  DATA.settings.thresholds={excellent:e,good:g,developing:d};
+  saveData(DATA);showToast('تم حفظ العتبات');
+}
+function resetThresholds(){
+  DATA.settings.thresholds={excellent:4.2,good:3.5,developing:2.8};
+  saveData(DATA);renderSettings();showToast('تمت الإعادة للافتراضي');
+}
+
+function togglePwd(){
+  const i=document.getElementById('apiKey');
+  i.type=i.type==='password'?'text':'password';
+}
+function saveApiKey(){
+  DATA.apiKey=document.getElementById('apiKey').value.trim();
+  saveData(DATA);showToast('تم حفظ المفتاح');
+}
+async function testApi(){
+  if(!DATA.apiKey){return showToast('أدخل المفتاح أولاً','error')}
+  showToast('جارٍ الاختبار...','warning');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':DATA.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:10,messages:[{role:'user',content:'مرحبا'}]})
+    });
+    if(r.ok)showToast('الاتصال ناجح');else{const t=await r.text();showToast('فشل: '+r.status,'error');console.error(t)}
+  }catch(e){showToast('خطأ في الاتصال','error');console.error(e)}
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='team_eval_data.json';a.click();
+  showToast('تم التصدير');
+}
+function importData(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=function(){
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.members)throw new Error('Invalid');
+      showConfirmModal('تأكيد الاستيراد','<p>سيتم استبدال جميع البيانات الحالية. هل تريد المتابعة؟</p>',()=>{
+        DATA=d;saveData(DATA);showToast('تم الاستيراد');renderSettings();return true;
+      },'btn-danger','استبدال');
+    }catch(e){showToast('ملف غير صالح','error')}
+  };
+  r.readAsText(f);
+  ev.target.value='';
+}
+function deleteAllData(){
+  const v=document.getElementById('confirmDelete').value.trim();
+  if(v!=='أوافق على الحذف النهائي')return showToast('يجب كتابة العبارة كاملة','error');
+  DATA=JSON.parse(JSON.stringify(DEFAULT_DATA));saveData(DATA);
+  document.getElementById('confirmDelete').value='';
+  showToast('تم الحذف النهائي');renderSettings();renderDashboard();
+}
+
+/* ========= MODAL ========= */
+function openModal(title,body,footer){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').innerHTML=body;
+  if(footer!==undefined)document.getElementById('modalFooter').innerHTML=footer;
+  else document.getElementById('modalFooter').innerHTML='<button class="btn btn-outline" onclick="closeModal()">إغلاق</button>';
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('active')}
+function showConfirmModal(title,body,onConfirm,btnClass='btn-primary',label='تأكيد'){
+  openModal(title,body,`<button class="btn btn-outline" onclick="closeModal()">إلغاء</button><button id="modalConfirmBtn" class="btn ${btnClass}">${label}</button>`);
+  document.getElementById('modalConfirmBtn').onclick=function(){
+    const r=onConfirm();if(r!==false)closeModal();
+  };
+}
+
+/* ========= AI ========= */
+function buildMemberContext(m){
+  const evs=getNonBaseline(m).slice().sort((a,b)=>new Date(a.taskDate)-new Date(b.taskDate));
+  const avg=getMemberAverage(m);const baseline=getMemberBaseline(m);const traj=getTrajectory(m);
+  const critAvgs=CRITERIA.map(c=>{const vals=evs.map(e=>e.scores[c.key]).filter(v=>v);return{name:c.name,avg:vals.length?(vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(2):'—'}});
+  const last5=evs.slice(-5).map(e=>`- ${e.taskDate} | ${e.taskName} | درجة ${calcWeightedScore(e.scores).toFixed(2)} | الدليل: ${e.evidenceNote}`).join('\n');
+  const range=evs.length?`من ${evs[0].taskDate} إلى ${evs[evs.length-1].taskDate}`:'لا توجد تقييمات';
+  return `
+العضو: ${m.name}
+الدور: ${m.role||'—'}
+عدد التقييمات: ${evs.length} (${range})
+المتوسط الموزون: ${avg!==null?avg.toFixed(2):'—'}
+التقييم الأولي: ${baseline!==null?baseline.toFixed(2):'—'}
+المسار: ${traj!==null?(traj>=0?'+':'')+traj.toFixed(2):'—'}
+عدد التأخر في التسليم: ${getLateCount(m)}
+
+متوسطات المعايير:
+${critAvgs.map(c=>'- '+c.name+': '+c.avg).join('\n')}
+
+آخر 5 تقييمات بالأدلة:
+${last5}
+`.trim();
+}
+
+async function callClaude(prompt){
+  if(!DATA.apiKey)throw new Error('لا يوجد مفتاح API. أضِفه من الإعدادات.');
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':DATA.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:"أنت مساعد متخصّص في كتابة تقارير الأداء المؤسسية. أسلوبك رصين ومهني، يليق بمؤسسة سيادية. تكتب بالعربية الفصحى. لا تستخدم الإيموجي ولا العناوين التزيينية. تقاريرك موضوعية تماماً، مبنية على البيانات المقدَّمة فقط، لا على الانطباعات.",messages:[{role:'user',content:prompt}]})
+  });
+  if(!r.ok){const t=await r.text();throw new Error('API error: '+r.status+' '+t)}
+  const j=await r.json();
+  return j.content[0].text;
+}
+
+async function generateReport(){
+  const m=DATA.members.find(x=>x.id===state.currentMemberId);if(!m)return;
+  openModal('تقرير الأداء — '+m.name,'<div class="spinner"></div><p style="text-align:center">جارٍ توليد التقرير...</p>',
+    `<button class="btn btn-outline" onclick="closeModal()">إغلاق</button>`);
+  const ctx=buildMemberContext(m);
+  const prompt=`أنت مستشار إداريّ متخصِّص في تقييم أداء فرق المحتوى المؤسسيّ. ستتلقّى بيانات عضو فريق وعليك إنتاج تقرير أداء مكتمل باللغة العربية الفصحى بنبرة مؤسسية رصينة.\n\nالبيانات:\n${ctx}\n\nأنتج التقرير وفق البنية التالية بعناوين بـ HTML (h3 و h4 و ul و p):\n1. ملخص تنفيذي (3-4 أسطر)\n2. نقاط القوة (مدعَّمة بالأدلة من التقييمات)\n3. مواطن الضعف (مدعَّمة بالأدلة)\n4. تحليل المسار: مقارنة بين التقييم الأولي والمتوسط الحالي\n5. توصية القرار\n\nاستخدم HTML للتنسيق فقط (لا تستخدم Markdown). لا تذكر أرقام التقييمات الخام، بل تحدَّث عن الأداء بلغة مؤسسية.`;
+  try{
+    const text=await callClaude(prompt);
+    document.getElementById('modalBody').innerHTML=text;
+    document.getElementById('modalFooter').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">إغلاق</button><button class="btn btn-primary" onclick="printModal()">طباعة</button>`;
+  }catch(e){
+    document.getElementById('modalBody').innerHTML='<p style="color:var(--danger)">حدث خطأ أثناء توليد التقرير. تحقّق من مفتاح API وحاول مجدداً.</p><p style="font-size:12px;color:var(--text-sec);margin-top:8px">'+escapeHtml(e.message)+'</p>';
+  }
+}
+
+async function generateDevPlan(){
+  const m=DATA.members.find(x=>x.id===state.currentMemberId);if(!m)return;
+  openModal('خطة تطوير — '+m.name,'<div class="spinner"></div><p style="text-align:center">جارٍ إعداد الخطة...</p>');
+  const ctx=buildMemberContext(m);
+  const prompt=`أنت مستشار تطوير في فرق المحتوى المؤسسيّ. اقترح خطة تطوير عملية ومحدَّدة بزمن لعضو فريق يحتاج تأهيلاً، باللغة العربية الفصحى وبنبرة مؤسسية.\n\nالبيانات:\n${ctx}\n\nأنتج خطة بـ HTML تتضمَّن:\n1. تشخيص دقيق لأولويات التطوير (المعايير الأضعف فقط)\n2. خطة 30 يوماً: مهام محدَّدة لكل أسبوع\n3. مؤشِّرات النجاح القابلة للقياس\n4. آلية المتابعة\n\nاستخدم HTML للتنسيق فقط. كن محدَّداً وعمليّاً، لا عاماً.`;
+  try{
+    const text=await callClaude(prompt);
+    document.getElementById('modalBody').innerHTML=text;
+    document.getElementById('modalFooter').innerHTML=`<button class="btn btn-outline" onclick="closeModal()">إغلاق</button><button class="btn btn-primary" onclick="printModal()">طباعة</button>`;
+  }catch(e){
+    document.getElementById('modalBody').innerHTML='<p style="color:var(--danger)">حدث خطأ أثناء توليد الخطة. تحقّق من مفتاح API وحاول مجدداً.</p><p style="font-size:12px;color:var(--text-sec);margin-top:8px">'+escapeHtml(e.message)+'</p>';
+  }
+}
+
+function printModal(){
+  const content=document.getElementById('modalBody').innerHTML;
+  const title=document.getElementById('modalTitle').textContent;
+  const w=window.open('','_blank');
+  w.document.write(`<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>${title}</title><link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet"><style>body{font-family:'Tajawal',sans-serif;padding:40px;max-width:800px;margin:auto;line-height:1.8;color:#1A1A2E}h1,h2,h3,h4{font-family:'Noto Naskh Arabic',serif;color:#1B3A5C}h1{border-bottom:3px solid #C9A84C;padding-bottom:10px}</style></head><body><h1>${title}</h1>${content}</body></html>`);
+  w.document.close();setTimeout(()=>w.print(),500);
+}
+
+/* ========= HELPERS ========= */
+function escapeHtml(s){if(s===null||s===undefined)return '';return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+/* ========= INIT ========= */
+document.querySelectorAll('.nav-link').forEach(l=>{
+  l.onclick=function(e){e.preventDefault();showScreen(this.dataset.screen)};
+});
+document.querySelectorAll('.tab-btn').forEach(b=>{
+  b.onclick=function(){
+    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-'+this.dataset.tab).classList.add('active');
+  };
+});
+
+document.getElementById('modalOverlay').onclick=function(e){if(e.target===this)closeModal()};
+document.getElementById('editMemberOverlay').onclick=function(e){if(e.target===this)this.classList.remove('active')};
+document.getElementById('printDate').textContent=formatDate(new Date().toISOString());
+
+renderDashboard();
+window.addEventListener('resize',()=>{if(state.currentScreen==='profile'&&state.currentMemberId){const m=DATA.members.find(x=>x.id===state.currentMemberId);if(m)drawPerformanceChart('perfChart',m)}});
+</script>
+</body>
+</html>
